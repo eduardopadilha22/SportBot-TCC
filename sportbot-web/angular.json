@@ -11,6 +11,7 @@
       "prefix": "app",
       "architect": {
         "build": {
+          "preserveSymlinks": true,
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/web-sportbot",
@@ -24,6 +25,7 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/@nebular/theme/styles/prebuilt/default.css",
               "src/styles.css"
             ],
             "scripts": []
@@ -120,6 +122,7 @@
           }
         }
       }
-    }},
+    }
+  },
   "defaultProject": "web-sportbot"
 }

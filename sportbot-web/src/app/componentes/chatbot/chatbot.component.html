@@ -1,0 +1,19 @@
+<nb-chat  [title]="title" >
+  
+  <nb-chat-message *ngFor="let msg of messages"
+                   [type]="msg.type"
+                   [message]="msg.text"
+                   [reply]="msg.reply"
+                   [date]="msg.date"
+                   [avatar]="msg.avatar">
+  </nb-chat-message>
+
+  <nb-chat-message *ngIf="loading" [nbSpinner]="true" nbSpinnerStatus="info"
+                   [type]="text"
+                   [message]="spinnerText"
+                   [avatar]="avatar">
+  </nb-chat-message>
+
+  <nb-chat-form  (send)="sendMessage($event)" placeholder="digite alguma coisa"></nb-chat-form>
+
+</nb-chat>
