@@ -1,0 +1,4 @@
+.nb-theme-default nb-chat-message.not-reply nb-chat-message-text .text {
+    background: red;
+    color: #fff;
+}

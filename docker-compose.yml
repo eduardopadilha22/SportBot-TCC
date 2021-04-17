@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    hostname: mongo
+    environment:
+       MONGO_INITDB_DATABASE: sportbot
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb_data_container:/docker-entrypoint-initdb.d
+    networks:
+      - netApi
+    restart: always
+
+networks:
+  netApi:
+    driver: bridge
