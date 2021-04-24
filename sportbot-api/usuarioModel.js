@@ -6,8 +6,8 @@ var usuarioSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    idade: {
-        type: Number,
+    email: {
+        type: String,
         required: true
     },
     cargo: {

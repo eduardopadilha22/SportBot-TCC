@@ -13,8 +13,9 @@ import { Platform } from '@angular/cdk/platform';
 //chatboot 
 import { ChatbotComponent } from './componentes/chatbot/chatbot.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { NbThemeModule, NbLayoutModule, NbChatModule, NbIconLibraries, NbSpinnerModule, NbChatFormComponent  } from '@nebular/theme';
+import { NbThemeModule, NbLayoutModule, NbChatModule, NbIconLibraries, NbSpinnerModule , NbChatOptions , NbIconModule   } from '@nebular/theme';
 import { HttpClientModule } from '@angular/common/http';
+import { NbEvaIconsModule } from '@nebular/eva-icons';
 
 @NgModule({
   declarations: [
@@ -30,10 +31,14 @@ import { HttpClientModule } from '@angular/common/http';
     NbSpinnerModule,
     HttpClientModule,
     NbChatModule,
+    NbEvaIconsModule,
+    NbIconModule
   ],
   providers: [
     Platform,
     NbIconLibraries,
+    NbChatOptions,
+    NbIconModule
     ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

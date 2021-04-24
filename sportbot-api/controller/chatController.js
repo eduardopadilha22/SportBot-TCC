@@ -2,6 +2,8 @@ const agentDiagflow = require('../agent');
 const dfff = require('dialogflow-fulfillment');
 const Usuario = require('../usuarioModel');
 const axios = require('axios');
+const { Payload } = require("dialogflow-fulfillment");
+const { error } = require('actions-on-google/dist/common');
 
 module.exports = {
     /**
@@ -11,64 +13,82 @@ module.exports = {
      */
     async agentWebHook(req, resp) {
         const { queryResult } = req.body
-     //   https://maps.googleapis.com/maps/api/place/textsearch/json?query=campo+sintetico_manaus&key=AIzaSyBVdQuQ5nZdGUuV2j3Lo8BgPyckN80QgKs
+        //   https://maps.googleapis.com/maps/api/place/textsearch/json?query=campo+sintetico_manaus&key=AIzaSyBVdQuQ5nZdGUuV2j3Lo8BgPyckN80QgKs
         const agent = new dfff.WebhookClient({
             request: req,
             response: resp
         })
 
-        const { nome, Idade, cargo, setor, esporte, tipoesporte } = queryResult.parameters;
+        const { nome, email, cargo, setor, esporte, tipoesporte } = queryResult.parameters;
 
         function fallback(agent) {
             agent.add(`Desculpe, mas não compreendi.`)
         }
 
-        function nomeFuncionario(agent) {
+        async function nomeFuncionario(agent) {
             var usuario = new Usuario()
             usuario.nome = nome.name;
-            usuario.idade = Idade;
+            usuario.email = email;
             usuario.cargo = cargo;
             usuario.setor = setor;
 
             try {
-                console.log('entrou aqui')
-                usuario.save();
+                await usuario.save();
                 agent.add(`Obrigado ${usuario.nome}, usuário está cadastrado, vamos pra o próximo passo ?`)
             } catch (error) {
-                throw new Error('Deu Erro!')
+                throw new Error(error.message)
             }
-        }
-        function sportBot(agent) {
-            agent.add('Obrigado pela resposta!')
         }
 
         function confirmacaoUsuario(agent) {
-            agent.add(`Agora vou lhe ajudar a encontrar lugares para a sua prática esportivas,
-                        mas primeiro me diga o Seu esporte Favorito ?`);
+            agent.add(`Agora vou lhe ajudar a encontrar lugares para a sua prática esportivas,  mas primeiro me diga o Seu esporte Favorito ?`);
         }
 
-        function escolherEsporte(agent) {
-        //     axios.get('https://maps.googleapis.com/maps/api/place/textsearch/json', {
-        //         params: {
-        //             query: `${esporte} ${tipoesporte} Manaus`
-        //         }
-        //     }).then(function(response) {
+        async function escolherEsporte(agent) {
+            let lugares;
+            await axios.get('https://maps.googleapis.com/maps/api/place/textsearch/json', {
+                params: {
+                    query: `${esporte} ${tipoesporte}`,
+                    location: '-3.0446423,-60.02062110000001',
+                    radius: 1000,
+                    key: process.env.KEY_MAPS
+                }
+            }).then(function (response) {
+                lugares = response.data.results;
+            }).catch(function (error) {
+                throw new Error(error.message)
+            });
 
-        //     }).catch(function(error) )
-        //     agent.add(`Entendi, seu esporte favorito é  ${esporte} do tipo ${tipoesporte}`);
-        // }
+
+
+            const payload = {
+                lugares: JSON.stringify(lugares)
+            };
+
+            await agent.add(
+                new Payload(agent.UNSPECIFIED, payload, { rawPayload: true, sendAsMessage: true })
+            );
+
+        }
+
+        async function lerEmail(agent) {
+            const usuarioEncontrado = await Usuario.find({ email: email });
+
+            if (usuarioEncontrado.length == 0) {
+                agent.add(usuarioEncontrado == '' ? 'Desculpe 😕 , esse e-mail não existe na Plataforma, deseja fazer um Cadastro? digite "quero cadastrar" ou digite seu e-mail novamente' : 'achou');
+            } else
+                agent.add(`Obrigado ${usuarioEncontrado[0].nome}, Bem-vindo novamente, vamos pra o próximo passo ?`)
+
+        }
 
 
         var intentMap = new Map();
 
-        // intentMap.set('webhookDemo',demo)
-
-        // intentMap.set('Default Welcome Intent',welcome)
-        // intentMap.set('Default Fallback Intent',fallback)
-        intentMap.set('typeSport', sportBot)
         intentMap.set('cadastrarFuncionário', nomeFuncionario)
         intentMap.set('cadastrarFuncionário - yes', confirmacaoUsuario)
-        // intentMap.set('escolhaEsporte', escolherEsporte)
+        intentMap.set('lerEmail - yes',confirmacaoUsuario)
+        intentMap.set('lerEmail', lerEmail)
+        intentMap.set('escolhaEsporte', escolherEsporte)
 
         agent.handleRequest(intentMap)
 
