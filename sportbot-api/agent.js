@@ -5,7 +5,7 @@ require('dotenv').config()
  * Send a query to the dialogflow agent, and return the query result.
  * @param {string} projectId The project to be used
  */
-async function runSample(message,sessionId,language) {
+async function runSample(message, sessionId, language, localizacao) {
 
   // A unique identifier for the given session
   // const sessionId = uuid.v4();
@@ -14,7 +14,10 @@ async function runSample(message,sessionId,language) {
   const sessionClient = new dialogflow.SessionsClient();
   const sessionPath = sessionClient.projectAgentSessionPath(projectId, sessionId);
 
-
+  // let param1 = [];
+  // let param2 = {};
+  // let ctx = { 'name': '<context name>', 'lifespan': 5, 'parameters': { 'param1': param1, 'param2': param2 } };
+  // agent.setContext(ctx);
   // The text query request.
   const request = {
     session: sessionPath,
@@ -25,6 +28,23 @@ async function runSample(message,sessionId,language) {
         // The language used by the client (en-US)
         languageCode: language,
       }
+    },
+    queryParams: {
+      contexts: [
+        {
+          name: "projects/example1-d9fbd/agent/sessions/fasd/contexts/localizacao",
+
+          /** Context lifespanCount */
+          lifespanCount: 5,
+          /** Context parameters */
+          parameters: {
+            fields: {
+              latitude: { kind: 'numberValue', numberValue: localizacao.longitude },
+              longitude: { kind: 'numberValue', numberValue: localizacao.latitude }
+            }
+          }
+        }
+      ],
     }
   };
 
@@ -41,10 +61,10 @@ async function runSample(message,sessionId,language) {
     console.log(`  No intent matched.`);
   }
 
-  
+
   return result;
-} 
+}
 
 module.exports = {
-    runSample
+  runSample
 }

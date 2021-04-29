@@ -13,17 +13,21 @@ module.exports = {
      */
     async agentWebHook(req, resp) {
         const { queryResult } = req.body
+
         //   https://maps.googleapis.com/maps/api/place/textsearch/json?query=campo+sintetico_manaus&key=AIzaSyBVdQuQ5nZdGUuV2j3Lo8BgPyckN80QgKs
         const agent = new dfff.WebhookClient({
             request: req,
             response: resp
         })
 
-        const { nome, email, cargo, setor, esporte, tipoesporte } = queryResult.parameters;
+
+
+        const { nome, email, cargo, setor, esporte, tipoesporte, questao1, questao2 } = queryResult.parameters;
 
         function fallback(agent) {
             agent.add(`Desculpe, mas não compreendi.`)
         }
+
 
         async function nomeFuncionario(agent) {
             var usuario = new Usuario()
@@ -45,11 +49,21 @@ module.exports = {
         }
 
         async function escolherEsporte(agent) {
+
+            let contextoLocalizacao = null;
+            for (let contexto of req.body.queryResult.outputContexts) {
+                const nameContexto = contexto.name.split('/');
+                const ultima = nameContexto[nameContexto.length - 1];
+                if (ultima === 'localizacao') {
+                    contextoLocalizacao = contexto;
+                }
+            }
+            console.log(contextoLocalizacao.parameters.longitude)
             let lugares;
             await axios.get('https://maps.googleapis.com/maps/api/place/textsearch/json', {
                 params: {
                     query: `${esporte} ${tipoesporte}`,
-                    location: '-3.0446423,-60.02062110000001',
+                    location: `${contextoLocalizacao.parameters.latitude},${contextoLocalizacao.parameters.longitude}`,
                     radius: 1000,
                     key: process.env.KEY_MAPS
                 }
@@ -59,8 +73,6 @@ module.exports = {
                 throw new Error(error.message)
             });
 
-
-
             const payload = {
                 lugares: JSON.stringify(lugares)
             };
@@ -68,6 +80,8 @@ module.exports = {
             await agent.add(
                 new Payload(agent.UNSPECIFIED, payload, { rawPayload: true, sendAsMessage: true })
             );
+
+
 
         }
 
@@ -81,14 +95,35 @@ module.exports = {
 
         }
 
+        async function satisfacao(agent) {
+            const contexto = req.body.queryResult.outputContexts[2].parameters.nome !== undefined ? req.body.queryResult.outputContexts[2]
+                : req.body.queryResult.outputContexts[0];
+            let usuarioEncontrado = null;
+            if (contexto.parameters.email !== undefined) {
+
+                usuarioEncontrado = await Usuario.find({ email: email });
+            }
+
+            await axios.post(
+                'https://sheet.best/api/sheets/9a825958-9166-4e6e-915e-ec64a33b2acd',
+                {
+                    Usuario: usuarioEncontrado ? usuarioEncontrado[0].nome : contexto.parameters.nome.name,
+                    Questao1: questao1,
+                    Questao2: questao2
+                }
+            );
+            await agent.add('Agradeço pela sua confiança!')
+        }
+
 
         var intentMap = new Map();
 
         intentMap.set('cadastrarFuncionário', nomeFuncionario)
         intentMap.set('cadastrarFuncionário - yes', confirmacaoUsuario)
-        intentMap.set('lerEmail - yes',confirmacaoUsuario)
+        intentMap.set('lerEmail - yes', confirmacaoUsuario)
         intentMap.set('lerEmail', lerEmail)
         intentMap.set('escolhaEsporte', escolherEsporte)
+        intentMap.set('escolhaEsporte - yes', satisfacao)
 
         agent.handleRequest(intentMap)
 
@@ -98,9 +133,9 @@ module.exports = {
      * request passando a @queryInput e @sessionId para o Agent 
      */
     async agentDiagflow(req, resp) {
-        const { queryInput, sessionId } = req.body;
+        const { queryInput, sessionId, localizacao } = req.body;
 
-        const response = await agentDiagflow.runSample(queryInput.text.text, sessionId, queryInput.text.languageCode);
+        const response = await agentDiagflow.runSample(queryInput.text.text, sessionId, queryInput.text.languageCode, localizacao);
 
         return resp.send(response);
     },
