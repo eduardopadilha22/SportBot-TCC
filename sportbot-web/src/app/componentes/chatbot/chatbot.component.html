@@ -1,4 +1,4 @@
-<nb-chat [title]="title" [status]="status">
+<nb-chat [title]="title" [status]="status" [size]="size">
 
   <nb-chat-message *ngFor="let msg of messages" [type]="msg.type" [message]="msg.text" [reply]="msg.reply"
     [date]="msg.date" [avatar]="msg.avatar" [files]="fileLugares">

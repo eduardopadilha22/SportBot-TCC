@@ -58,7 +58,7 @@ module.exports = {
                     contextoLocalizacao = contexto;
                 }
             }
-            console.log(contextoLocalizacao.parameters.longitude)
+            console.log(contextoLocalizacao.parameters)
             let lugares;
             await axios.get('https://maps.googleapis.com/maps/api/place/textsearch/json', {
                 params: {
@@ -96,18 +96,22 @@ module.exports = {
         }
 
         async function satisfacao(agent) {
-            const contexto = req.body.queryResult.outputContexts[2].parameters.nome !== undefined ? req.body.queryResult.outputContexts[2]
-                : req.body.queryResult.outputContexts[0];
-            let usuarioEncontrado = null;
-            if (contexto.parameters.email !== undefined) {
 
-                usuarioEncontrado = await Usuario.find({ email: email });
+            // const contexto = req.body.queryResult.outputContexts[2].parameters.nome !== undefined ? req.body.queryResult.outputContexts[2]
+            //     : req.body.queryResult.outputContexts[0];
+
+            const { parameters } = req.body.queryResult.outputContexts[0];
+
+            let usuarioEncontrado = null;
+            if (parameters.email !== undefined) {
+
+                usuarioEncontrado = await Usuario.find({ email: parameters.email });
             }
 
             await axios.post(
                 'https://sheet.best/api/sheets/9a825958-9166-4e6e-915e-ec64a33b2acd',
                 {
-                    Usuario: usuarioEncontrado ? usuarioEncontrado[0].nome : contexto.parameters.nome.name,
+                    Usuario: usuarioEncontrado ? usuarioEncontrado[0].nome : parameters.nome.name,
                     Questao1: questao1,
                     Questao2: questao2
                 }

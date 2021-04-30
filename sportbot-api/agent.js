@@ -39,8 +39,8 @@ async function runSample(message, sessionId, language, localizacao) {
           /** Context parameters */
           parameters: {
             fields: {
-              latitude: { kind: 'numberValue', numberValue: localizacao.longitude },
-              longitude: { kind: 'numberValue', numberValue: localizacao.latitude }
+              latitude: { kind: 'numberValue', numberValue: localizacao.latitude },
+              longitude: { kind: 'numberValue', numberValue: localizacao.longitude }
             }
           }
         }

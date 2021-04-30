@@ -7,14 +7,14 @@ import { ChatbotService } from './chatbot.service';
   selector: 'app-chatbot',
   templateUrl: './chatbot.component.html',
   styles: [`
-  ::ng-deep nb-layout-column {
-    justify-content: center;
-    display: flex;
-  }
-  nb-chat {
-    width: 500px;
-    margin: 0.5rem 0 2rem 2rem;
-  }`],
+    ::ng-deep nb-layout-column {
+      justify-content: center;
+      display: flex;
+    }
+    nb-chat {
+      width: 400px;
+    }
+  `],
 })
 export class ChatbotComponent implements OnInit, AfterViewInit {
   path = 'http://localhost:3333/change-bot'
@@ -31,12 +31,14 @@ export class ChatbotComponent implements OnInit, AfterViewInit {
   ultimoTexto: String;
   buscaLocalizacao: Boolean = false;
   localizacao
+  size
   @ViewChild('form', { static: false }) formInput: NbChatFormComponent;
 
   constructor(private chatbotService: ChatbotService) {
     this.avatar = '../../../assets//icon-bot.jpeg'
     this.title = 'FALE COM SPORTBOT'
     this.status = 'success'
+    this.size = "large"
     this.options = {
       enableHighAccuracy: true,
       timeout: 5000,
@@ -62,12 +64,26 @@ vamos começar realizando seu cadastro ? digite "quero cadastrar",  se você já
 
   }
 
+  
   buscarLocalizacao() {
     navigator.geolocation.getCurrentPosition(e => {
-      console.log(e.coords)
       this.localizacao.longitude = e.coords.longitude;
       this.localizacao.latitude = e.coords.latitude;
     })
+
+    // if (navigator.geolocation) {
+    //   navigator.geolocation.getCurrentPosition(function(position) {
+    //     console.log(position.coords)
+    //     this.localizacao.longitude = position.coords.longitude;
+    //     this.localizacao.latitude = position.coords.latitude;
+    //     console.log(this.localizacao)
+    //   });
+    // }else{
+    //   console.log('error')
+    // }
+      
+      
+      
   }
 
 

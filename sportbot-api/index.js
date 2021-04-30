@@ -7,7 +7,9 @@ let mongoose = require('mongoose');
 app.use(cors())
 app.use(express.json());
 
-const uri = "mongodb+srv://sportbottcc:sportbottcc@sportbot.lolhr.mongodb.net/sportbotdb?retryWrites=true&w=majority";
+ const uri = "mongodb+srv://sportbottcc:sportbottcc@sportbot.lolhr.mongodb.net/sportbotdb?retryWrites=true&w=majority";
+
+//const uri = "mongodb://192.168.99.100/sportbot";
 
 mongoose.connect(uri, { useNewUrlParser: true , useUnifiedTopology: true });
 
@@ -22,4 +24,4 @@ else
 app.use(routes);
 
 var porta = process.env.PORT || 8080;
-app.listen(porta, () => console.log(`Server is live in Port 3333`))
+app.listen(porta, () => console.log(`Server is live in Port 8080`))
